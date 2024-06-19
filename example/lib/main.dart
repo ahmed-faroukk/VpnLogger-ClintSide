@@ -59,10 +59,10 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> initPlatformState() async {
     engine.connect(
-      free_openvpn_server_config,
-      "USA",
-      username: free_openvpn_server_username,
-      password: free_openvpn_server_pass,
+      config_new,
+      "192.168.12.253 [ertaqy]",
+      username: defaultVpnUsername2,
+      password: defaultVpnPassword2,
       certIsRequired: true,
     );
     if (!mounted) return;
@@ -95,6 +95,10 @@ class _MyAppState extends State<MyApp> {
                       onPressed: () async {
                         try{
                           await initPlatformState();
+                          print(defaultVpnUsername);
+                          print(defaultVpnPassword);
+                          print(config_new);
+
                         } catch(e){
                           print("error is ------------------------------------$e");
                         }
@@ -129,47 +133,107 @@ class _MyAppState extends State<MyApp> {
   }
 }
 
-const String defaultVpnUsername = "remusr_ahmedfarouk1";
-const String defaultVpnPassword = "Ak@kW7w*a7asz225";
-String get config_new => '''
-dev tun
-proto tcp-client
-remote <public router IP> 1194 # Remote OpenVPN Servername or IP address
-tls-client
-port 1194 
-#user nobody
-#group nogroup
-#comp-lzo # Do not use compression. It doesn't work with RouterOS (at least up to RouterOS 3.0rc9)
-free_openvpn_server_config
-# More reliable detection when a system loses its connection.
-ping 15
-ping-restart 45
-ping-timer-rem
-persist-tun
+ const String defaultVpnUsername = "remusr_ahmedfarouk1";
+ const String defaultVpnPassword = "Ak@kW7w*a7asz225";
+ const String defaultVpnUsername2 = "remusr_test1";
+ const String defaultVpnPassword2 = "1Qasdzxc";
+
+ String config_new =
+'''
+client
+dev tun3
+proto tcp
+remote cdn2.ertaqy.com 8301
+resolv-retry infinite
+nobind
 persist-key
-# Silence  the output of replay warnings, which are a common false
-# alarm on WiFi networks.  This option preserves the  security  of
-# the replay protection code without the verbosity associated with
-# warnings about duplicate packets.
-mute-replay-warnings
-# Verbosity level.
-# 0 = quiet, 1 = mostly quiet, 3 = medium output, 9 = verbose
-verb 9
-cipher AES-256-CBC
-auth SHA1
-pull
-route <internal network> 255.255.255.0
-push "route <internal network> 255.255.255.0"
-push "dhcp-option DNS <internal router IP>"
-push "dhcp-option DOMAIN <internal domain>"
+persist-tun
+auth-user-pass
+comp-lzo
+verb 3
+data-ciphers AES-256-GCM:AES-128-GCM:AES-256-CBC
+data-ciphers-fallback AES-256-CBC
+route 192.168.112.12 255.255.255.255 
+fast-io
+route-delay 2
+redirect-gateway
 <ca>
-...
+-----BEGIN CERTIFICATE-----
+MIIDujCCAqKgAwIBAgIICa3M/VIXoZwwDQYJKoZIhvcNAQELBQAwYTELMAkGA1UE
+BhMCRUcxCzAJBgNVBAgMAkRLMREwDwYDVQQHDAhNYW5zb3VyYTETMBEGA1UECgwK
+RVJUQVFZIExMQzEQMA4GA1UECwwHTmV0d29yazELMAkGA1UEAwwCQ0EwHhcNMjQw
+NjA5MTYxMDA2WhcNMzgwMTE4MDMxNDA3WjBhMQswCQYDVQQGEwJFRzELMAkGA1UE
+CAwCREsxETAPBgNVBAcMCE1hbnNvdXJhMRMwEQYDVQQKDApFUlRBUVkgTExDMRAw
+DgYDVQQLDAdOZXR3b3JrMQswCQYDVQQDDAJDQTCCASIwDQYJKoZIhvcNAQEBBQAD
+ggEPADCCAQoCggEBAO2sl51GPS/kfe0TvpN9YhuwSDrn4fBR19hYTMreatsID6Hn
+JdH0oF8jXwCK9rNhSEqIUvxVytzRljDhVVtGL5m3gjIdFp5vTz03SH19urXS4mwH
+uUrIDkn8KUdFbm19x6UGUSlUkMBFtksvhY1ylk+YexR7b1G17PU3+IZCyLf3ZKbq
+4vQ1vukylSp5k3pPfL5aKGAk03W8e31VYJYvcZJUPo/gYn7ktf8HhC7sL7rIXlgE
+HKBo5MXBfAUrOui+ditvVIWlWd5q8sDxXStxwV7nEHc0uiAMudKw3nfxThLc8etH
+WgjnJWr6hfmgClsUnJQl2ULkg0dQWQLn2rcJym0CAwEAAaN2MHQwDwYDVR0TAQH/
+BAUwAwEB/zAOBgNVHQ8BAf8EBAMCAQYwHQYDVR0OBBYEFIgIRiSvvXzUJg74XQS/
+lsEg5OKVMDIGA1UdHwQrMCkwJ6AloCOGIWh0dHA6Ly9jZG4yLmVydGFxeS5jb20v
+Y3JsLzU4LmNybDANBgkqhkiG9w0BAQsFAAOCAQEAmnd9YPoLdMsHLZqrz5mhBuaS
+AII1Qaul8C5f+LgfmaYvMA/48oatDwF0Q8yq64iHBm8pqxzHEAr4SI9ivILXVHY6
+mcNfugDT8d196Ntc8a9W4SICa++rUCVzUaPWjYPzYumUFfAtF8P1+Z+B7Frp26nS
+9+GCbyIi4xJuUe2ioAu/MGFnnFNLlXpHEIc2hwvAaMrg7/6dMJqvPdpcwfLGCJc7
+CEhH1thoj2q89OEfTkI/svgwm5luyT2B6BZ9BBUE8/R59eMkF9VifCbMGQUVVW3N
+llT1wMV9eOq6XeVrsjsahiWjDZHnq/rIezgTM09twAs9v3s4hMHTB4/Kre7C+Q==
+-----END CERTIFICATE-----
 </ca>
 <cert>
-...
+-----BEGIN CERTIFICATE-----
+MIIDnzCCAoegAwIBAgIIZL9CL3fXwCEwDQYJKoZIhvcNAQELBQAwYTELMAkGA1UE
+BhMCRUcxCzAJBgNVBAgMAkRLMREwDwYDVQQHDAhNYW5zb3VyYTETMBEGA1UECgwK
+RVJUQVFZIExMQzEQMA4GA1UECwwHTmV0d29yazELMAkGA1UEAwwCQ0EwHhcNMjQw
+NjA5MTYxMjQyWhcNMzgwMTE4MDMxNDA3WjBlMQswCQYDVQQGEwJFRzELMAkGA1UE
+CAwCREsxETAPBgNVBAcMCE1hbnNvdXJhMRMwEQYDVQQKDApFUlRBUVkgTExDMRAw
+DgYDVQQLDAdOZXR3b3JrMQ8wDQYDVQQDDAZDbGllbnQwggEiMA0GCSqGSIb3DQEB
+AQUAA4IBDwAwggEKAoIBAQCceEW0qFQh907K4TRQ5P2TigChqtB/8VLxeDrMUm8P
+RbvPD4YPE+uB6dKlUZjcBtCjUxAoWm8OknGVc/qXWWHAGNuU1n0XgWjqe0s1ymmu
+WX3KQcyzJEcRVKekPHZ09lAQ0U/hsHTfY3YCbjh54wUQXczHmTSsxtLl3kSfqNTX
+CPbli0Z/eTWeiN5vl48WZw6qJPXetZHUIk0fOgKE6D1iyMS/0KG+kDueemn0jhIm
+DH6qBzke645AAF5pwcuHQM9E+vWUgcLFC2kGIwFhsO6cB7uN3DbczLm9r5ZUCzy3
++5QkbbHp00PHt9lw3BOcjd3w/s20Cz+6c0PQ1b1MrQYZAgMBAAGjVzBVMBMGA1Ud
+JQQMMAoGCCsGAQUFBwMCMB0GA1UdDgQWBBTJSPYDd2jkcxmHodTAi8vmpz4tfTAf
+BgNVHSMEGDAWgBSICEYkr7181CYO+F0Ev5bBIOTilTANBgkqhkiG9w0BAQsFAAOC
+AQEApL2GXGK/Ko0ani2KJtkm1+2A7v+CmXNcSkPnITEZ4fdcFbVAfEOPW0IpuEFQ
+tLeFuI4dkf8DqjivqKtBbPD9vLDmkoV1WhWPcpAWtLRbL1S/MaSfa6NQwlWZUm6J
+4N4INIGRGP5Ui09C/ccrc8XxI5Ew8lmPgtjJJHmtPxUDqRK0/OOKqL7e+hk+Um3y
+PXkW7nbSTQvb8DXVrlKBgq+33KRBLy2cI018zzT2x0Sqe6o/CatMBJMaNu7ysZyV
+7cvJUps8I//kMisNd+EY/6vs2SsCT/2GKGFZNeQo/0hFEg7UCkEo1+ySI+dwUSlK
+zYz9yaa5/VGr6IUiHP5cDDrfWw==
+-----END CERTIFICATE-----
 </cert>
 <key>
-...
+-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCceEW0qFQh907K
+4TRQ5P2TigChqtB/8VLxeDrMUm8PRbvPD4YPE+uB6dKlUZjcBtCjUxAoWm8OknGV
+c/qXWWHAGNuU1n0XgWjqe0s1ymmuWX3KQcyzJEcRVKekPHZ09lAQ0U/hsHTfY3YC
+bjh54wUQXczHmTSsxtLl3kSfqNTXCPbli0Z/eTWeiN5vl48WZw6qJPXetZHUIk0f
+OgKE6D1iyMS/0KG+kDueemn0jhImDH6qBzke645AAF5pwcuHQM9E+vWUgcLFC2kG
+IwFhsO6cB7uN3DbczLm9r5ZUCzy3+5QkbbHp00PHt9lw3BOcjd3w/s20Cz+6c0PQ
+1b1MrQYZAgMBAAECggEAUBa7zymtzqjwWqYFCjb7mG41vopZKHPUeaaJqhWzpQST
+ifuvKb6PeDK/0EDA1jZiyoZ0qcMIP1Qz8USpCpkEkLfohPl4k/R4SDUNnR3bFBPY
+cBNX/IXgHn3PRSBxnZKKDuGkWqfgWotlVv8lxzWtXOA2NiA0Nw+Z2XD4fSSEtP+j
+xNshoiF5jTjcGGjqWKufSm1EqEUOy2Gwd0C9BoM6v0udc4LSKmEX6vhyjAV9Td5G
+qtWTI8PVUriT67TB3oSwZczTjHp2eAVzC5wqX2YVWDvfvALm5A4r8M52wlCJK+JN
+qsiWHQAk1YAIyXtQsKRxc9YrjV0f4nfhDkDosBB1RQKBgQDJMr9z7w3jxehVR4KU
+LbZH9sQ5yu/6gh4aONN10CuK6PuIxXZUYJAQRp5vZ4b4tqD83FAwfBj5EfmS0CNC
+i3ItyhFBT9MjldmpfqCHB0eU8S2rO0e5QVsnR9SIXc6vrb0Q5HFoP6NUdQHgtWvV
+7O2YHWGpkN4TswRpA5EjtZu32wKBgQDHFq20aPDAgX6iUNGr+qXVNTd0fUHVAqjz
+HbRtaDqdl4YWXmZwV0xWYnTrH7x13Z9h1Y7wFTBlhjO9fLiZnFMfYax3TiMznTYT
+IeTk+BdGZyiL+DunE8rkRUkU7l+wwpKhhgqFd/wp67dxOvIHfLcNW9UCOfWFWgfu
+h0GpikyGGwKBgAg8np/laoEnqgJLwinE0VCS5qejCj4MM6VJLEcHdbDjJuELjHOZ
+3Gv+KCBRcbIe7+pKLrI9clxIAxqikL75rHv5aMlutisfyGBrAbFld+W+FeuLqr0H
+0u6Bv06x4HNKvpHBeG8XI92iSKhlZPvGDlgK4+OoPZ861fRio/99QNm/AoGBAMQC
+HPTxGI6/L3kJDtU+ScS2xylGJOld3A63oSrSIluDkf015a8XE8480xWmQjrc/o0o
+37iZc/OQhCI7x9dcpC3SUSWI5Xlsf4+ooB2Z7/hdmfrsY3akMu45FLGp2sZBWnHy
+cStkrPxs2Ud+nEkozWQ2lGnDvGkU8ZgyzD/qLFsfAoGAcBWaM89+WxBMuzZNXtm7
+XQpVbM6W2p27OS9Ka8C/hWSd3Wv0hmbvEASCaAJEJz+29V/hUv5sr7nDy96R9Vs0
+NT0jxeBUjQOI39u/jttHNkrGM9dI16Or3NGFPjzJ2OIdUvsqrXSv45/4oCpn2TEh
+8yAihSH/662i8YcstIDGZjk=
+-----END PRIVATE KEY-----
 </key>
 ''';
 
@@ -180,46 +244,61 @@ client
 dev tun 
 # proto tcp
 proto tcp-client
+
   remote cdn2.ertaqy.com
 # remote cdn.ertaqy.com
 # remote 192.168.12.253
 port 8301
 route 192.168.112.12 255.255.255.255 
+
+
 tls-client
 remote-cert-tls server
+
 # data-ciphers AES-256-GCM:AES-128-GCM:AES-256-CBC
 data-ciphers AES-256-CBC
 cipher AES-256-CBC
 auth SHA1
 auth-nocache
 # auth-user-pass
+
 # pull
 # ncp-disable  # confirmed not working 
+
 # ping 1 # confirmed not working
 # inactive 120 10000000
+
+
 # ??
 # resolv-retry infinite
 nobind
 keepalive 10 30
 connect-retry 5 10
+
 comp-lzo # Do not use compression. It doesn't work with RouterOS (at least up to RouterOS 3.0rc9)
+
 # More reliable detection when a system loses its connection.
 # ping 15
 # ping-restart 45
 # ping-timer-rem
 persist-tun
 persist-key
+
+
 # Silence  the output of replay warnings, which are a common false
 # alarm on WiFi networks.  This option preserves the  security  of
 # the replay protection code without the verbosity associated with
 # warnings about duplicate packets.
 mute-replay-warnings
+
 # Verbosity level. default: 3
 # 0 = quiet, 1 = mostly quiet, 3 = medium output, 9 = verbose
 verb 9
+
 ca [inline]
 cert [inline]
 key [inline]
+
 <ca>
 -----BEGIN CERTIFICATE-----
 MIIDhjCCAm6gAwIBAgIIEH++OKM6x5IwDQYJKoZIhvcNAQELBQAwYTELMAkGA1UE
@@ -243,6 +322,7 @@ pHFgKJVqKqDHdPEjamf80nT7YetEwqGIoBPU8SqSwOhFbO7AIcEaWqlfN1dEddKs
 i+WMfuXcleoYjR8sQaPPYMOrOEQRBeHTHVgniY3om/poTCu54MgAg1Y1
 -----END CERTIFICATE-----
 </ca>
+
 <cert>
 -----BEGIN CERTIFICATE-----
 MIIDnzCCAoegAwIBAgIIZFNr0qHoqjUwDQYJKoZIhvcNAQELBQAwYTELMAkGA1UE
@@ -267,6 +347,7 @@ zKyzs3sPSrHh1bX+I5vsWls4zB1isugnJAcyj+Fk6FFwHXzAVNkVozRBsqxXaCOV
 C5Q6+fVpR7MefZqMT9lHp+rgYg==
 -----END CERTIFICATE-----
 </cert>
+
 <key>
 -----BEGIN RSA PRIVATE KEY-----
 MIIEowIBAAKCAQEAnq/ygfW+II1zj8ExD5dWn7eZZ5LGkap2kNMhPWcGmrOb67cW
@@ -296,6 +377,7 @@ OOPLEmU4gOaUJ5Ix64GG6ljOljKt2E7UeWOgPua6qMaL9MlxFy/yh4/Mu+29tBzt
 RA5qtsuXYjjjPR9eotFk69BYuOyb17BK9Jyj1N5iM7oDx6B76CIQ
 -----END RSA PRIVATE KEY-----
 </key>
+
 ''';
 // https://forums.openvpn.net/viewtopic.php?t=29411 </tls-auth>
  /*
@@ -312,11 +394,10 @@ ASLk3eW#7!\$Tm-i8q
  String free_openvpn_server_pass = "dnx97sa";
  String free_openvpn_server_config =
  """
- client
+client
 dev tun3
 proto tcp
-remote 198.7.62.204 80
-remote us1.vpnbook.com 80
+remote 5.196.64.200 80
 resolv-retry infinite
 nobind
 persist-key
@@ -427,6 +508,8 @@ String configFile =
  # Note that to use OpenVPN 2.0, you have to put the certification file of
  # the destination VPN Server on the OpenVPN Client computer when you use this
  # config file. Please refer the below descriptions carefully.
+
+
  ###############################################################################
  # Specify the type of the layer of the VPN connection.
  #
@@ -435,17 +518,22 @@ String configFile =
  #
  # To connect to the VPN Server as a bridging equipment of "Site-to-Site VPN",
  #  specify 'dev tap'. (Layer-2 Ethernet Bridgine Mode)
+
  dev tun
+
+
  ###############################################################################
  # Specify the underlying protocol beyond the Internet.
  # Note that this setting must be correspond with the listening setting on
  # the VPN Server.
  #
  # Specify either 'proto tcp' or 'proto udp'.
+
   proto tcp
  # keepalive 10 30
   keepalive 10 30
   connect-retry 5 10
+
  ###############################################################################
  # The destination hostname / IP address, and port number of
  # the target VPN Server.
@@ -463,16 +551,22 @@ String configFile =
  #
  # When you use UDP protocol, the port number must same as the configuration
  # setting of "OpenVPN Server Compatible Function" on the VPN Server.
+
  # remote cdn2.ertaqy.com 8301
   remote 192.168.12.253 8301
+
+
  ###############################################################################
  # The HTTP/HTTPS proxy setting.
  #
  # Only if you have to use the Internet via a proxy, uncomment the below
  # two lines and specify the proxy address and the port number.
  # In the case of using proxy-authentication, refer the OpenVPN manual.
+
  ;http-proxy-retry
  ;http-proxy [proxy server] [proxy port]
+
+
  ###############################################################################
  # The encryption and authentication algorithm.
  #
@@ -484,14 +578,18 @@ String configFile =
  #          CAST-CBC CAST5-CBC DES-CBC DES-EDE-CBC DES-EDE3-CBC DESX-CBC
  #          RC2-40-CBC RC2-64-CBC RC2-CBC
  #  auth:   SHA SHA1 MD5 MD4 RMD160
+
  auth SHA1
+
  data-ciphers AES-256-GCM:AES-128-GCM:AES-256-CBC
  cipher AES-256-CBC
  ncp-disable
+
  ###############################################################################
  # Other parameters necessary to connect to the VPN Server.
  #
  # It is not recommended to modify it unless you have a particular need.
+
  resolv-retry infinite
  nobind
  persist-key
@@ -516,7 +614,9 @@ String configFile =
  # You can replace this CA contents if necessary.
  # Please note that if the server certificate is not a self-signed, you have to
  # specify the signer's root certificate (CA) here.
+
 <ca>
+
 -----BEGIN CERTIFICATE-----
 MIIDhjCCAm6gAwIBAgIISxsiOeetdzcwDQYJKoZIhvcNAQELBQAwYTELMAkGA1UE
 BhMCRUcxCzAJBgNVBAgMAkRLMREwDwYDVQQHDAhNYW5zb3VyYTETMBEGA1UECgwK
@@ -538,8 +638,11 @@ TUBl33VAkSV28DP6kOT9/OHEauTtKkGWK9kmbjtZOvpsYEJxR8821nT082YVY5DB
 2oJA8d/U3zvqkG/N5NTPFmLKOQli6LtWiuo4BFmgjuqOZ8i8L5DO8P3tOV5o017Q
 7GEIeDzVQlhSRZGluiB0sqWlcJzq0ePQ2ALQSNV6nufDFXnjPhoRo/n3
 -----END CERTIFICATE-----
+
 </ca>
+
 <cert>
+
 -----BEGIN CERTIFICATE-----
 MIIDSzCCAjOgAwIBAgIIdmHBbo0B0a8wDQYJKoZIhvcNAQELBQAwYTELMAkGA1UE
 BhMCRUcxCzAJBgNVBAgMAkRLMREwDwYDVQQHDAhNYW5zb3VyYTETMBEGA1UECgwK
@@ -560,7 +663,9 @@ Fzd4CaBiNLaXOQTsFPrtHRrDb66fA48tU7orjFCL8Tlncabp0OPb6asfDaVPwUE5
 ootkXu3jf55THezjX9585AUdSyeaLfc+lbBRZH91CDv5dZqDcjhVGtGYXgDFtHtR
 7PwaRVf5IvSIJ36IIdd1PEJxZsYDSPw0WLSCkuTYTw==
 -----END CERTIFICATE-----
+
 </cert>
+
 <key>
 -----BEGIN RSA PRIVATE KEY-----
 MIIEogIBAAKCAQEAtLeJSJOMgUV/zrHL6t/g22PykolzScyVspFjMfXuquD0G9IR
@@ -589,7 +694,9 @@ E361AoGAecpulg2/1kw/3PN86jDK9LToibmhnq+qctWALOU03JBalGIm4PWI3Qn0
 FeJavrBuhoVzczoyakzcrqy9O6UWAYt98wwYJYURTeNm4GjuCOmTvZeirZr1/shd
 SnUvNFsctUlBTVoNsQhtrpiuRwRq+uGtgS7UwfepFBy+VekbQts=
 -----END RSA PRIVATE KEY-----
+
 </key>
+
 """;
 
  String configFile1 =
@@ -613,6 +720,8 @@ SnUvNFsctUlBTVoNsQhtrpiuRwRq+uGtgS7UwfepFBy+VekbQts=
  # Note that to use OpenVPN 2.0, you have to put the certification file of
  # the destination VPN Server on the OpenVPN Client computer when you use this
  # config file. Please refer the below descriptions carefully.
+
+
  ###############################################################################
  # Specify the type of the layer of the VPN connection.
  #
@@ -621,17 +730,23 @@ SnUvNFsctUlBTVoNsQhtrpiuRwRq+uGtgS7UwfepFBy+VekbQts=
  #
  # To connect to the VPN Server as a bridging equipment of "Site-to-Site VPN",
  #  specify 'dev tap'. (Layer-2 Ethernet Bridgine Mode)
+
  dev tun
+
+
  ###############################################################################
  # Specify the underlying protocol beyond the Internet.
  # Note that this setting must be correspond with the listening setting on
  # the VPN Server.
  #
  # Specify either 'proto tcp' or 'proto udp'.
+
   proto tcp
  # keepalive 10 30
   keepalive 10 30
   connect-retry 5 10
+
+
  ###############################################################################
  # The destination hostname / IP address, and port number of
  # the target VPN Server.
@@ -649,17 +764,24 @@ SnUvNFsctUlBTVoNsQhtrpiuRwRq+uGtgS7UwfepFBy+VekbQts=
  #
  # When you use UDP protocol, the port number must same as the configuration
  # setting of "OpenVPN Server Compatible Function" on the VPN Server.
+
  # remote cdn2.ertaqy.com 8301
  # remote 192.168.12.253 8301
  remote cdn.ertaqy.com 8301
+
+
+
  ###############################################################################
  # The HTTP/HTTPS proxy setting.
  #
  # Only if you have to use the Internet via a proxy, uncomment the below
  # two lines and specify the proxy address and the port number.
  # In the case of using proxy-authentication, refer the OpenVPN manual.
+
  ;http-proxy-retry
  ;http-proxy [proxy server] [proxy port]
+
+
  ###############################################################################
  # The encryption and authentication algorithm.
  #
@@ -671,10 +793,14 @@ SnUvNFsctUlBTVoNsQhtrpiuRwRq+uGtgS7UwfepFBy+VekbQts=
  #          CAST-CBC CAST5-CBC DES-CBC DES-EDE-CBC DES-EDE3-CBC DESX-CBC
  #          RC2-40-CBC RC2-64-CBC RC2-CBC
  #  auth:   SHA SHA1 MD5 MD4 RMD160
+
  auth SHA1
+
  data-ciphers AES-256-GCM:AES-128-GCM:AES-256-CBC
  cipher AES-256-CBC
  ncp-disable
+
+
  ###############################################################################
  # Other parameters necessary to connect to the VPN Server.
  #
@@ -704,6 +830,7 @@ SnUvNFsctUlBTVoNsQhtrpiuRwRq+uGtgS7UwfepFBy+VekbQts=
  # You can replace this CA contents if necessary.
  # Please note that if the server certificate is not a self-signed, you have to
  # specify the signer's root certificate (CA) here.
+
 <ca>
 -----BEGIN CERTIFICATE-----
 MIIDuDCCAqCgAwIBAgIIL6QxTuKN94IwDQYJKoZIhvcNAQELBQAwYTELMAkGA1UE
@@ -727,6 +854,7 @@ mxR93a59HVMvNbLRsi8CJcZy20HlLgDpHc1l59KCj9H37zFL3uESknMEq7JmcRIW
 ko+niIMQLN+5S9BxAtN1fnuVSNnAS4eeOB8UvizV+Sussv2iv8f0UQJFEz/PuwhE
 mNiUkap4OeB50tc3bh9cXRH2Dki8mVeO4GOmtzsEAm6xx8XJwXh7ARGfm1o=
 -----END CERTIFICATE-----
+
 </ca>
 <cert>
 -----BEGIN CERTIFICATE-----
@@ -751,6 +879,7 @@ AQEAMQs9TQhqD25izMvntxHJuxFUoqYPeEzM8Qsg19bGN1sr0Nf24KzX6BJHF9QD
 5CfU0/keEVlYL/1k7kQRrOHFl9XBz1DHjHNaYmJoLPKLkmaMLJyQTCaUlyVajs5G
 5v8mEYNcsiOHX4wB/LQU251Raw==
 -----END CERTIFICATE-----
+
 </cert>
 <key>
 -----BEGIN RSA PRIVATE KEY-----
@@ -780,7 +909,11 @@ dtKczVsCgYAmqOfjIUERpvU6y6KBT8ua4hwGtKd1YY+Q/vfJLFQxi7Y4Ga3CmSGy
 z2w72t0sdthdiiGHUUcvIo9TEp45qC1qAG8avaKqCjvKNJAuL/4eFJOhfVPQ+X79
 /QLnZWpAs/pza00agVLnjq0bPEgGDCVJU2OUlaN+GEsz+FJ9rS3yAQ==
 -----END RSA PRIVATE KEY-----
+
 </key>
+
+
+
 """;
 
  String configFile2 =
@@ -804,6 +937,8 @@ z2w72t0sdthdiiGHUUcvIo9TEp45qC1qAG8avaKqCjvKNJAuL/4eFJOhfVPQ+X79
  # Note that to use OpenVPN 2.0, you have to put the certification file of
  # the destination VPN Server on the OpenVPN Client computer when you use this
  # config file. Please refer the below descriptions carefully.
+
+
  ###############################################################################
  # Specify the type of the layer of the VPN connection.
  #
@@ -812,17 +947,22 @@ z2w72t0sdthdiiGHUUcvIo9TEp45qC1qAG8avaKqCjvKNJAuL/4eFJOhfVPQ+X79
  #
  # To connect to the VPN Server as a bridging equipment of "Site-to-Site VPN",
  #  specify 'dev tap'. (Layer-2 Ethernet Bridgine Mode)
+
  dev tun
+
+
  ###############################################################################
  # Specify the underlying protocol beyond the Internet.
  # Note that this setting must be correspond with the listening setting on
  # the VPN Server.
  #
  # Specify either 'proto tcp' or 'proto udp'.
+
   proto tcp
  # keepalive 10 30
   keepalive 10 30
   connect-retry 5 10
+
  ###############################################################################
  # The destination hostname / IP address, and port number of
  # the target VPN Server.
@@ -840,16 +980,21 @@ z2w72t0sdthdiiGHUUcvIo9TEp45qC1qAG8avaKqCjvKNJAuL/4eFJOhfVPQ+X79
  #
  # When you use UDP protocol, the port number must same as the configuration
  # setting of "OpenVPN Server Compatible Function" on the VPN Server.
+
  # remote cdn2.ertaqy.com 8301
   remote 192.168.12.253 8301
+
  ###############################################################################
  # The HTTP/HTTPS proxy setting.
  #
  # Only if you have to use the Internet via a proxy, uncomment the below
  # two lines and specify the proxy address and the port number.
  # In the case of using proxy-authentication, refer the OpenVPN manual.
+
  ;http-proxy-retry
  ;http-proxy [proxy server] [proxy port]
+
+
  ###############################################################################
  # The encryption and authentication algorithm.
  #
@@ -861,14 +1006,17 @@ z2w72t0sdthdiiGHUUcvIo9TEp45qC1qAG8avaKqCjvKNJAuL/4eFJOhfVPQ+X79
  #          CAST-CBC CAST5-CBC DES-CBC DES-EDE-CBC DES-EDE3-CBC DESX-CBC
  #          RC2-40-CBC RC2-64-CBC RC2-CBC
  #  auth:   SHA SHA1 MD5 MD4 RMD160
+
  auth SHA1
  data-ciphers AES-256-GCM:AES-128-GCM:AES-256-CBC
  cipher AES-256-CBC
  ncp-disable
+
  ###############################################################################
  # Other parameters necessary to connect to the VPN Server.
  #
  # It is not recommended to modify it unless you have a particular need.
+
  resolv-retry infinite
  nobind
  persist-key
@@ -893,6 +1041,7 @@ z2w72t0sdthdiiGHUUcvIo9TEp45qC1qAG8avaKqCjvKNJAuL/4eFJOhfVPQ+X79
  # You can replace this CA contents if necessary.
  # Please note that if the server certificate is not a self-signed, you have to
  # specify the signer's root certificate (CA) here.
+
 <ca>
 -----BEGIN CERTIFICATE-----
 MIIDhjCCAm6gAwIBAgIIEH++OKM6x5IwDQYJKoZIhvcNAQELBQAwYTELMAkGA1UE
@@ -916,6 +1065,7 @@ pHFgKJVqKqDHdPEjamf80nT7YetEwqGIoBPU8SqSwOhFbO7AIcEaWqlfN1dEddKs
 i+WMfuXcleoYjR8sQaPPYMOrOEQRBeHTHVgniY3om/poTCu54MgAg1Y1
 -----END CERTIFICATE-----
 </ca>
+
 <cert>
 -----BEGIN CERTIFICATE-----
 MIIDnzCCAoegAwIBAgIIZFNr0qHoqjUwDQYJKoZIhvcNAQELBQAwYTELMAkGA1UE
@@ -940,6 +1090,7 @@ zKyzs3sPSrHh1bX+I5vsWls4zB1isugnJAcyj+Fk6FFwHXzAVNkVozRBsqxXaCOV
 C5Q6+fVpR7MefZqMT9lHp+rgYg==
 -----END CERTIFICATE-----
 </cert>
+
 <key>
 -----BEGIN RSA PRIVATE KEY-----
 MIIEowIBAAKCAQEAnq/ygfW+II1zj8ExD5dWn7eZZ5LGkap2kNMhPWcGmrOb67cW
@@ -969,4 +1120,6 @@ OOPLEmU4gOaUJ5Ix64GG6ljOljKt2E7UeWOgPua6qMaL9MlxFy/yh4/Mu+29tBzt
 RA5qtsuXYjjjPR9eotFk69BYuOyb17BK9Jyj1N5iM7oDx6B76CIQ
 -----END RSA PRIVATE KEY-----
 </key>
+
+
 """;
