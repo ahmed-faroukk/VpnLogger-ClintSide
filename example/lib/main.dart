@@ -1,9 +1,10 @@
- import 'dart:io';
+import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
-
 import 'package:openvpn_flutter/openvpn_flutter.dart';
+import 'package:dio/dio.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,10 +18,19 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  final TextEditingController _controller = TextEditingController();
+  final TextEditingController _Urlcontroller = TextEditingController();
+  String defaultVpnUsername = "remusr_ahmedfarouk1";
+  String defaultVpnPassword = "Ak@kW7w*a7asz225";
+  String defaultVpnUsername2 = "remusr_test1";
+  String defaultVpnPassword2 = "1Qasdzxc";
+
   late OpenVPN engine;
   VpnStatus? status;
   String? stage;
   bool _granted = false;
+  var serverUrl = "";
+
   @override
   void initState() {
     engine = OpenVPN(
@@ -38,19 +48,19 @@ class _MyAppState extends State<MyApp> {
 
     engine.initialize(
       groupIdentifier: "group.com.laskarmedia.vpn",
-      providerBundleIdentifier: "id.laskarmedia.openvpnFlutterExample.VPNExtension",
+      providerBundleIdentifier:
+          "id.laskarmedia.openvpnFlutterExample.VPNExtension",
       localizedDescription: "VPN by Nizwar",
       lastStage: (stage) {
         setState(() {
           this.stage = stage.name;
-          print( "open vpn last stage is " + this.stage.toString());
+          print("open vpn last stage is " + this.stage.toString());
         });
       },
       lastStatus: (status) {
         setState(() {
           this.status = status;
-          print( "open vpn last status is " + this.status.toString());
-
+          print("open vpn last status is " + this.status.toString());
         });
       },
     );
@@ -59,7 +69,7 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> initPlatformState() async {
     engine.connect(
-      config_new,
+      _controller.text,
       "192.168.12.253 [ertaqy]",
       username: defaultVpnUsername2,
       password: defaultVpnPassword2,
@@ -71,79 +81,278 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: Scaffold(
+        resizeToAvoidBottomInset: false,
+        backgroundColor: Colors.white,
         appBar: AppBar(
-          title: const Text('Ertaqy Vpn'),
-          backgroundColor: Colors.blue,
+          title:  Text('Ertaqy Vpn Logger ' , style: TextStyle(color: Colors.white)),
+          backgroundColor: Colors.black,
         ),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
+        body: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+          child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-
-                Text(stage?.toString() ?? VPNStage.disconnected.toString() , style: const TextStyle(color: Colors.green , fontWeight: FontWeight.bold),),
+                _buildTitle("Server URL file : "),
+                _buildServerUrlInput(),
+                _buildTitle("Configuration file : "),
+                _buildConfigFileInput(),
                 const SizedBox(height: 10),
-                Text(status?.toJson().toString() ?? "", style: const TextStyle(color: Colors.blue), ),
-                const SizedBox(height: 25),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    ElevatedButton(
-                      child: const Text("Start"),
-                      onPressed: () async {
-                        try{
-                          await initPlatformState();
-                          print(defaultVpnUsername);
-                          print(defaultVpnPassword);
-                          print(config_new);
+                _buildConfigFileButton(),
+                const SizedBox(height: 10),
+                _buildTitle("Status : "),
+                Divider(),
+                _buildStatusText(),
+                Divider(),
+                const SizedBox(height: 10),
+                _buildTitle("last Stage : "),
+                Divider(),
+                _buildStageText(),
+                Divider(),
+                const SizedBox(height: 10),
+                _buildControlButtons(),
+                const SizedBox(height: 10),
+                _buildTitle("Vpn Permission : "),
+                Divider(),
+                if (Platform.isAndroid) _buildPermissionButton(),
+                Divider(),
 
-                        } catch(e){
-                          print("error is ------------------------------------$e");
-                        }
-                      },
-                    ),
-                    ElevatedButton(
-                      child: const Text("STOP"),
-                      onPressed: () {
-                        engine.disconnect();
-                      },
-                    ),
-                  ],
-                ),
-
-                if (Platform.isAndroid)
-                  TextButton(
-                    child: Text(_granted ? "Granted" : "Request Permission"),
-                    onPressed: () {
-                      engine.requestPermissionAndroid().then((value) {
-                        setState(() {
-                          _granted = value;
-                        });
-                      });
-                    },
-                  ),
               ],
             ),
-          ),
+          )
         ),
       ),
     );
   }
-}
 
- const String defaultVpnUsername = "remusr_ahmedfarouk1";
- const String defaultVpnPassword = "Ak@kW7w*a7asz225";
- const String defaultVpnUsername2 = "remusr_test1";
- const String defaultVpnPassword2 = "1Qasdzxc";
+  Widget _buildConfigFileInput() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          maxHeight: 200.0, // Set the maximum height
+        ),
+        child: TextField(
+          controller: _controller,
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            labelText: 'Enter config file',
+          ),
+          maxLines: null, // Allows for multi-line input
+        ),
+      ),
+    );
+  }
 
- String config_new =
-'''
+  Widget _buildServerUrlInput() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          maxHeight: 200.0, // Set the maximum height
+        ),
+        child: TextField(
+          controller: _Urlcontroller,
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            labelText: 'Enter Server URL',
+          ),
+          maxLines: 1, // Allows for multi-line input
+        ),
+      ),
+    );
+  }
+
+
+  Widget _buildTitle(String text) {
+    return Padding(
+      padding: const EdgeInsets.all(25),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Text(
+            text,
+            style: const TextStyle(color: Colors.black , fontWeight: FontWeight.bold ,fontSize: 15),
+          )
+        ],
+      ),
+    );
+  }
+  Widget _buildTitleForStatus(String text) {
+    return Padding(
+      padding: const EdgeInsets.all(25),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Text(
+            text,
+            style: const TextStyle(color: Colors.black ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildConfigFileButton() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child : ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.black, // Button background color
+          shadowColor: Colors.grey, // Shadow color
+          elevation: 5, // Elevation for shadow effect
+        ),
+        child: const Text( "get Config file ", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+        onPressed: () async {
+          _controller.text = "loading........";
+          var configFile = await fetchVpnConfig("server1");
+          _controller.text = configFile;
+        },
+      ),
+
+    );
+
+  }
+
+  Widget _buildStageText() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Text(
+        stage?.toString() ?? VPNStage.disconnected.toString(),
+        style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  Widget _buildStatusText() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Center(
+          child : Column(
+            children: [
+              _buildRow("Duration :", status?.duration.toString() ?? ''),
+              _buildRow("Connected On :", status?.connectedOn.toString() ?? ''),
+              _buildRow("Byte In :", status?.byteIn ?? ''),
+              _buildRow("Byte Out :", status?.byteOut ?? ''),
+              _buildRow("Packets In :", status?.packetsIn ?? ''),
+              _buildRow("Packets Out :", status?.packetsOut ?? ''),
+            ],
+          ),
+      ),
+    );
+  }
+  Widget _buildRow(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        _buildTitleForStatus(label),
+        Expanded(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Text(
+              value,
+              style: const TextStyle(color: Colors.red),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+
+
+
+  Widget _buildControlButtons() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.black, // Button background color
+              shadowColor: Colors.grey, // Shadow color
+              elevation: 5, // Elevation for shadow effect
+            ),
+            child: const Text( "connect", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+            onPressed: () async {
+              try {
+                await initPlatformState();
+                print(defaultVpnUsername);
+                print(defaultVpnPassword);
+                print(config_new);
+              } catch (e) {
+                print("Error: $e");
+              }
+            },
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.black, // Button background color
+              shadowColor: Colors.grey, // Shadow color
+              elevation: 5, // Elevation for shadow effect
+            ),
+            child: const Text( "disconnect", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+            onPressed: () {
+              status = VpnStatus.empty();
+              engine.disconnect();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPermissionButton() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: TextButton(
+        child: Text(
+          _granted ? "Granted" : "Request Permission",
+          style: TextStyle(color: _granted ? Colors.green : Colors.red),
+        ),
+        onPressed: () {
+          engine.requestPermissionAndroid().then((value) {
+            setState(() {
+              _granted = value;
+            });
+          });
+        },
+      ),
+    );
+  }
+
+  Future<String> fetchVpnConfig(String serverName) async {
+    final Dio dio = Dio();
+    final String url =
+        'https://api.ertaqy.com/mobile-app/com.ertaqy.app/vpn-$serverName-config.txt';
+    try {
+      final response = await dio.get<String>(url);
+      if (response.statusCode == 200) {
+        print("config resopnse  ==");
+        print(response.data);
+        return response.data ?? '';
+      } else {
+        print("config resopnse in exception   ==");
+
+        throw Exception('Failed to load VPN config');
+      }
+    } catch (e) {
+      print("config resopnse in exception   ==");
+
+      print('Error: $e');
+      return '';
+    }
+  }
+
+
+  String config_new = '''
 client
 dev tun3
 proto tcp
-remote cdn2.ertaqy.com 8301
+remote 192.168.12.253 8301
 resolv-retry infinite
 nobind
 persist-key
@@ -153,10 +362,10 @@ comp-lzo
 verb 3
 data-ciphers AES-256-GCM:AES-128-GCM:AES-256-CBC
 data-ciphers-fallback AES-256-CBC
-route 192.168.112.12 255.255.255.255 
 fast-io
 route-delay 2
 redirect-gateway
+route 192.168.112.12 255.255.255.255
 <ca>
 -----BEGIN CERTIFICATE-----
 MIIDujCCAqKgAwIBAgIICa3M/VIXoZwwDQYJKoZIhvcNAQELBQAwYTELMAkGA1UE
@@ -237,8 +446,7 @@ NT0jxeBUjQOI39u/jttHNkrGM9dI16Or3NGFPjzJ2OIdUvsqrXSv45/4oCpn2TEh
 </key>
 ''';
 
-
-String get config => '''
+  String get config => '''
 client
 # dev tun
 dev tun 
@@ -379,8 +587,9 @@ RA5qtsuXYjjjPR9eotFk69BYuOyb17BK9Jyj1N5iM7oDx6B76CIQ
 </key>
 
 ''';
+
 // https://forums.openvpn.net/viewtopic.php?t=29411 </tls-auth>
- /*
+  /*
  * <tls-crypt>
 -----BEGIN OpenVPN Static key V1-----
 ASLk3eW#7!\$Tm-i8q
@@ -390,10 +599,9 @@ ASLk3eW#7!\$Tm-i8q
 *
 * */
 
- String free_openvpn_server_username = "vpnbook";
- String free_openvpn_server_pass = "dnx97sa";
- String free_openvpn_server_config =
- """
+  String free_openvpn_server_username = "vpnbook";
+  String free_openvpn_server_pass = "dnx97sa";
+  String free_openvpn_server_config = """
 client
 dev tun3
 proto tcp
@@ -485,10 +693,9 @@ t8VO6ZmI7I++borJBNmbWS4gEk85DYnaLI9iw4oF2+Dr0LKKAaUL+Pq67wmvufOn
 hTobb/WAAcA75GKmU4jn5Ln2
 -----END PRIVATE KEY-----
 </key>
- """
- ;
-String configFile =
-"""
+ """;
+
+  String configFile = """
  ###############################################################################
  # OpenVPN 2.0 Sample Configuration File
  # for PacketiX VPN / SoftEther VPN Server
@@ -699,8 +906,7 @@ SnUvNFsctUlBTVoNsQhtrpiuRwRq+uGtgS7UwfepFBy+VekbQts=
 
 """;
 
- String configFile1 =
- """
+  String configFile1 = """
  ###############################################################################
  # OpenVPN 2.0 Sample Configuration File
  # for PacketiX VPN / SoftEther VPN Server
@@ -916,8 +1122,7 @@ z2w72t0sdthdiiGHUUcvIo9TEp45qC1qAG8avaKqCjvKNJAuL/4eFJOhfVPQ+X79
 
 """;
 
- String configFile2 =
- """
+  String configFile2 = """
  ###############################################################################
  # OpenVPN 2.0 Sample Configuration File
  # for PacketiX VPN / SoftEther VPN Server
@@ -1120,6 +1325,5 @@ OOPLEmU4gOaUJ5Ix64GG6ljOljKt2E7UeWOgPua6qMaL9MlxFy/yh4/Mu+29tBzt
 RA5qtsuXYjjjPR9eotFk69BYuOyb17BK9Jyj1N5iM7oDx6B76CIQ
 -----END RSA PRIVATE KEY-----
 </key>
-
-
 """;
+}
